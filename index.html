@@ -8,16 +8,16 @@
 </head>
 <body>
   <div id="app">
-    <!-- Top Bar: Navigation & Search -->
+    <!-- Top Navigation Bar -->
     <header class="top-nav">
       <button id="back-btn" class="nav-btn" disabled>◄</button>
       <input type="text" id="search-input" placeholder="Search items or recipes..." autocomplete="off">
       <button id="clear-btn" class="nav-btn">✕</button>
     </header>
 
-    <!-- Main Content Body -->
+    <!-- Main Content Area -->
     <main class="main-body">
-      <!-- Left / Top: Active Recipe Crafting Grid Display -->
+      <!-- Top Section: Recipe Viewer -->
       <section class="viewer-section">
         <div class="panel-header">
           <span id="current-recipe-title">Select an item</span>
@@ -38,7 +38,6 @@
             <div class="slot" data-index="8"></div>
           </div>
 
-          <!-- Arrow -->
           <div class="crafting-arrow">➔</div>
 
           <!-- Output Slot -->
@@ -47,7 +46,7 @@
           </div>
         </div>
 
-        <!-- Recipe pagination (if an item has multiple recipes) -->
+        <!-- Recipe Pagination -->
         <div class="recipe-pagination" id="pagination-controls" style="display:none;">
           <button id="prev-recipe-btn" class="page-btn">◀ Prev</button>
           <span id="recipe-index-indicator">1 / 1</span>
@@ -55,14 +54,24 @@
         </div>
       </section>
 
-      <!-- Bottom: Search Results / Item Catalog Browser -->
+      <!-- Bottom Section: Item Catalog -->
       <section class="catalog-section">
-        <div class="panel-header">
-          <span>Items Catalog</span>
+        <div class="catalog-controls">
+          <select id="addon-filter">
+            <option value="ALL">All Addons / Vanilla</option>
+          </select>
           <span id="item-count-badge" class="sub-badge">0 items</span>
         </div>
+
+        <!-- Selected Item Detail Card (Shows on single click) -->
+        <div id="item-info-bar" class="item-info-bar" style="display: none;">
+          <div class="info-name" id="info-item-name">Item Name</div>
+          <div class="info-addon" id="info-addon-name">Addon: Minecraft</div>
+          <div class="info-hint">💡 Double-tap / double-click to view recipe</div>
+        </div>
+
         <div class="item-grid" id="item-catalog">
-          <!-- Item icons will be injected here dynamically -->
+          <!-- Item grid injected here -->
         </div>
       </section>
     </main>
