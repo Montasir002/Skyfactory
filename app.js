@@ -7,11 +7,11 @@ class RecipeViewer {
     this.historyStack = [];
     this.currentRecipeList = [];
     this.currentRecipeIndex = 0;
-    this.selectedItemId = null;
+    this.selectedCatalogId = null;
 
-    // Double-tap timing for mobile screens
-    this.lastTapTime = 0;
-    this.lastTappedItem = null;
+    // Double tap timing tracker for grid slots
+    this.gridLastTapTime = 0;
+    this.gridLastTappedSlot = null;
 
     this.initElements();
     this.bindEvents();
@@ -34,7 +34,7 @@ class RecipeViewer {
     this.prevRecipeBtn = document.getElementById('prev-recipe-btn');
     this.nextRecipeBtn = document.getElementById('next-recipe-btn');
 
-    // Info Bar
+    // Info Box
     this.infoBar = document.getElementById('item-info-bar');
     this.infoItemName = document.getElementById('info-item-name');
     this.infoAddonName = document.getElementById('info-addon-name');
@@ -65,12 +65,39 @@ class RecipeViewer {
       }
     });
 
-    // Slots inside 3x3 crafting grid
-    this.gridSlots.forEach(slot => {
+    // 1. Grid Slots Click & Double Click Handling
+    this.gridSlots.forEach((slot, index) => {
       slot.addEventListener('click', () => {
         const itemId = slot.dataset.itemId;
-        if (itemId) this.handleItemClick(itemId, slot);
+        if (!itemId) return;
+
+        const now = Date.now();
+        const isDoubleTap = (this.gridLastTappedSlot === index) && (now - this.gridLastTapTime < 350);
+        this.gridLastTapTime = now;
+        this.gridLastTappedSlot = index;
+
+        // Highlight active grid slot
+        document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
+        slot.classList.add('selected');
+
+        // Single click: Show ingredient details
+        this.showItemInfo(itemId);
+
+        // Double click: Go to ingredient recipe
+        if (isDoubleTap) {
+          this.viewItemRecipes(itemId);
+        }
       });
+    });
+
+    // 2. Result Slot Single Click: Show Details
+    this.resultSlot.addEventListener('click', () => {
+      if (this.currentRecipeList.length > 0) {
+        const outId = this.currentRecipeList[this.currentRecipeIndex].result.item;
+        document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
+        this.resultSlot.classList.add('selected');
+        this.showItemInfo(outId);
+      }
     });
   }
 
@@ -85,7 +112,6 @@ class RecipeViewer {
 
       const namespaces = new Set();
 
-      // Index recipes by output item ID
       this.recipes.forEach(rec => {
         const outId = rec.result.item;
         if (!this.recipesByOutput.has(outId)) {
@@ -93,12 +119,10 @@ class RecipeViewer {
         }
         this.recipesByOutput.get(outId).push(rec);
 
-        // Collect namespaces for addon filter dropdown
         const ns = this.extractNamespace(outId);
         namespaces.add(ns);
       });
 
-      // Populate addon filter dropdown
       this.addonFilter.innerHTML = '<option value="ALL">All Addons / Vanilla</option>';
       Array.from(namespaces).sort().forEach(ns => {
         const opt = document.createElement('option');
@@ -115,8 +139,8 @@ class RecipeViewer {
   }
 
   extractNamespace(itemId) {
-    if (!itemId) return 'unknown';
-    return itemId.includes(':') ? itemId.split(':')[0] : 'vanilla';
+    if (!itemId) return 'vanilla';
+    return itemId.includes(':') ? itemId.split(':')[0] : 'minecraft';
   }
 
   formatNamespace(ns) {
@@ -156,7 +180,7 @@ class RecipeViewer {
     uniqueItems.forEach(itemId => {
       const el = document.createElement('div');
       el.className = 'slot';
-      if (this.selectedItemId === itemId) el.classList.add('selected');
+      if (this.selectedCatalogId === itemId) el.classList.add('selected');
 
       const img = document.createElement('img');
       img.src = this.getTextureUrl(itemId);
@@ -164,31 +188,17 @@ class RecipeViewer {
 
       el.appendChild(img);
 
-      // Tap / Double-tap handling
-      el.addEventListener('click', () => this.handleItemClick(itemId, el));
+      // Single click on catalog item: show recipe immediately
+      el.addEventListener('click', () => {
+        this.selectedCatalogId = itemId;
+        document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        this.showItemInfo(itemId);
+        this.viewItemRecipes(itemId);
+      });
 
       this.catalog.appendChild(el);
     });
-  }
-
-  handleItemClick(itemId, element) {
-    const now = Date.now();
-    const isDoubleTap = (this.lastTappedItem === itemId) && (now - this.lastTapTime < 350);
-
-    this.lastTapTime = now;
-    this.lastTappedItem = itemId;
-
-    // Single Click: Select item and show info card below dropdown
-    this.selectedItemId = itemId;
-    document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
-    if (element) element.classList.add('selected');
-
-    this.showItemInfo(itemId);
-
-    // Double Click: Open recipe
-    if (isDoubleTap) {
-      this.viewItemRecipes(itemId);
-    }
   }
 
   showItemInfo(itemId) {
@@ -231,7 +241,7 @@ class RecipeViewer {
       this.paginationControls.style.display = 'none';
     }
 
-    // Grid slots
+    // Populate Crafting Grid Slots
     this.gridSlots.forEach((slot, i) => {
       slot.innerHTML = '';
       slot.dataset.itemId = '';
@@ -247,8 +257,9 @@ class RecipeViewer {
       }
     });
 
-    // Output slot
+    // Populate Result Slot
     this.resultSlot.innerHTML = '';
+    this.resultSlot.classList.remove('selected');
     const resImg = document.createElement('img');
     resImg.src = this.getTextureUrl(recipe.result.item);
     this.resultSlot.appendChild(resImg);
