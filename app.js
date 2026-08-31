@@ -9,7 +9,6 @@ class RecipeViewer {
     this.currentRecipeIndex = 0;
     this.selectedCatalogId = null;
 
-    // Double tap timing tracker for grid slots
     this.gridLastTapTime = 0;
     this.gridLastTappedSlot = null;
 
@@ -34,7 +33,6 @@ class RecipeViewer {
     this.prevRecipeBtn = document.getElementById('prev-recipe-btn');
     this.nextRecipeBtn = document.getElementById('next-recipe-btn');
 
-    // Info Box
     this.infoBar = document.getElementById('item-info-bar');
     this.infoItemName = document.getElementById('info-item-name');
     this.infoAddonName = document.getElementById('info-addon-name');
@@ -65,7 +63,7 @@ class RecipeViewer {
       }
     });
 
-    // 1. Grid Slots Click & Double Click Handling
+    // 3x3 Grid Slot Clicks
     this.gridSlots.forEach((slot, index) => {
       slot.addEventListener('click', () => {
         const itemId = slot.dataset.itemId;
@@ -76,24 +74,21 @@ class RecipeViewer {
         this.gridLastTapTime = now;
         this.gridLastTappedSlot = index;
 
-        // Highlight active grid slot
         document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
         slot.classList.add('selected');
 
-        // Single click: Show ingredient details
         this.showItemInfo(itemId);
 
-        // Double click: Go to ingredient recipe
         if (isDoubleTap) {
           this.viewItemRecipes(itemId);
         }
       });
     });
 
-    // 2. Result Slot Single Click: Show Details
+    // Result Slot Click
     this.resultSlot.addEventListener('click', () => {
       if (this.currentRecipeList.length > 0) {
-        const outId = this.currentRecipeList[this.currentRecipeIndex].result.item;
+        const outId = this.currentRecipeList[this.currentRecipeIndex].r;
         document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
         this.resultSlot.classList.add('selected');
         this.showItemInfo(outId);
@@ -106,14 +101,15 @@ class RecipeViewer {
       const resp = await fetch('data/recipes.json');
       const data = await resp.json();
 
-      this.recipes = data.recipes || [];
-      this.addonTextures = data.textures || {};
-      this.vanillaTextures = data.vanilla_textures || {};
+      // Handles both compact format (r, t, v) and full schema
+      this.recipes = data.r || data.recipes || [];
+      this.addonTextures = data.t || data.textures || {};
+      this.vanillaTextures = data.v || data.vanilla_textures || {};
 
       const namespaces = new Set();
 
       this.recipes.forEach(rec => {
-        const outId = rec.result.item;
+        const outId = rec.r || rec.result?.item;
         if (!this.recipesByOutput.has(outId)) {
           this.recipesByOutput.set(outId, []);
         }
@@ -133,7 +129,7 @@ class RecipeViewer {
 
       this.renderCatalog();
     } catch (e) {
-      this.recipeTitle.innerText = "Error loading data/recipes.json";
+      this.recipeTitle.innerText = "Error loading recipes.json";
       console.error(e);
     }
   }
@@ -177,18 +173,21 @@ class RecipeViewer {
 
     this.itemCountBadge.innerText = `${uniqueItems.length} items`;
 
+    // Render items with lazy loading images
+    const fragment = document.createDocumentFragment();
+
     uniqueItems.forEach(itemId => {
       const el = document.createElement('div');
       el.className = 'slot';
       if (this.selectedCatalogId === itemId) el.classList.add('selected');
 
       const img = document.createElement('img');
+      img.loading = 'lazy'; // Prevents bulk network flood
       img.src = this.getTextureUrl(itemId);
       img.onerror = () => { img.style.display = 'none'; };
 
       el.appendChild(img);
 
-      // Single click on catalog item: show recipe immediately
       el.addEventListener('click', () => {
         this.selectedCatalogId = itemId;
         document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
@@ -197,8 +196,10 @@ class RecipeViewer {
         this.viewItemRecipes(itemId);
       });
 
-      this.catalog.appendChild(el);
+      fragment.appendChild(el);
     });
+
+    this.catalog.appendChild(fragment);
   }
 
   showItemInfo(itemId) {
@@ -215,7 +216,7 @@ class RecipeViewer {
     if (!list || list.length === 0) return;
 
     if (pushHistory && this.currentRecipeList.length > 0) {
-      const currentItem = this.currentRecipeList[this.currentRecipeIndex].result.item;
+      const currentItem = this.currentRecipeList[this.currentRecipeIndex].r || this.currentRecipeList[this.currentRecipeIndex].result?.item;
       this.historyStack.push(currentItem);
       this.backBtn.disabled = false;
     }
@@ -229,7 +230,8 @@ class RecipeViewer {
     const recipe = this.currentRecipeList[this.currentRecipeIndex];
     if (!recipe) return;
 
-    const shortName = recipe.result.item.includes(':') ? recipe.result.item.split(':')[1] : recipe.result.item;
+    const outId = recipe.r || recipe.result?.item;
+    const shortName = outId.includes(':') ? outId.split(':')[1] : outId;
     this.recipeTitle.innerText = shortName.replace(/_/g, ' ');
 
     if (this.currentRecipeList.length > 1) {
@@ -241,12 +243,14 @@ class RecipeViewer {
       this.paginationControls.style.display = 'none';
     }
 
+    const grid = recipe.g || recipe.grid || [];
+
     // Populate Crafting Grid Slots
     this.gridSlots.forEach((slot, i) => {
       slot.innerHTML = '';
       slot.dataset.itemId = '';
       slot.classList.remove('selected');
-      const inputId = recipe.grid[i];
+      const inputId = grid[i];
 
       if (inputId) {
         slot.dataset.itemId = inputId;
@@ -261,13 +265,14 @@ class RecipeViewer {
     this.resultSlot.innerHTML = '';
     this.resultSlot.classList.remove('selected');
     const resImg = document.createElement('img');
-    resImg.src = this.getTextureUrl(recipe.result.item);
+    resImg.src = this.getTextureUrl(outId);
     this.resultSlot.appendChild(resImg);
 
-    if (recipe.result.count > 1) {
+    const count = recipe.c || recipe.result?.count || 1;
+    if (count > 1) {
       const badge = document.createElement('span');
       badge.className = 'count-badge';
-      badge.innerText = recipe.result.count;
+      badge.innerText = count;
       this.resultSlot.appendChild(badge);
     }
   }
