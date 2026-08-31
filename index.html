@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SkyFactory Recipe Viewer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar: Navigation & Search -->
+    <header class="top-nav">
+      <button id="back-btn" class="nav-btn" disabled>◄</button>
+      <input type="text" id="search-input" placeholder="Search items or recipes..." autocomplete="off">
+      <button id="clear-btn" class="nav-btn">✕</button>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="main-body">
+      <!-- Left / Top: Active Recipe Crafting Grid Display -->
+      <section class="viewer-section">
+        <div class="panel-header">
+          <span id="current-recipe-title">Select an item</span>
+          <span id="recipe-counter" class="sub-badge"></span>
+        </div>
+
+        <div class="crafting-container">
+          <!-- 3x3 Grid -->
+          <div class="crafting-grid" id="crafting-grid">
+            <div class="slot" data-index="0"></div>
+            <div class="slot" data-index="1"></div>
+            <div class="slot" data-index="2"></div>
+            <div class="slot" data-index="3"></div>
+            <div class="slot" data-index="4"></div>
+            <div class="slot" data-index="5"></div>
+            <div class="slot" data-index="6"></div>
+            <div class="slot" data-index="7"></div>
+            <div class="slot" data-index="8"></div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="crafting-arrow">➔</div>
+
+          <!-- Output Slot -->
+          <div class="slot result-slot" id="result-slot">
+            <span class="count-badge" id="result-count"></span>
+          </div>
+        </div>
+
+        <!-- Recipe pagination (if an item has multiple recipes) -->
+        <div class="recipe-pagination" id="pagination-controls" style="display:none;">
+          <button id="prev-recipe-btn" class="page-btn">◀ Prev</button>
+          <span id="recipe-index-indicator">1 / 1</span>
+          <button id="next-recipe-btn" class="page-btn">Next ▶</button>
+        </div>
+      </section>
+
+      <!-- Bottom: Search Results / Item Catalog Browser -->
+      <section class="catalog-section">
+        <div class="panel-header">
+          <span>Items Catalog</span>
+          <span id="item-count-badge" class="sub-badge">0 items</span>
+        </div>
+        <div class="item-grid" id="item-catalog">
+          <!-- Item icons will be injected here dynamically -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js" type="module"></script>
+</body>
+</html>

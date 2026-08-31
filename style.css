@@ -1,0 +1,208 @@
+:root {
+  --bg-color: #1e1e1f;
+  --panel-bg: #313233;
+  --slot-bg: #8b8b8b;
+  --slot-border-dark: #373737;
+  --slot-border-light: #ffffff;
+  --text-color: #e0e0e0;
+  --accent-color: #55ff55;
+  --border-radius: 4px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  overflow: hidden;
+  height: 100dvh;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Top Navigation Bar */
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: var(--panel-bg);
+  border-bottom: 2px solid #181818;
+}
+
+.nav-btn {
+  background: #4a4b4d;
+  color: #fff;
+  border: 2px solid #222;
+  border-radius: var(--border-radius);
+  padding: 8px 14px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+}
+
+#search-input {
+  flex: 1;
+  background: #181818;
+  color: #fff;
+  border: 2px solid #4a4b4d;
+  border-radius: var(--border-radius);
+  padding: 8px 12px;
+  font-size: 15px;
+  outline: none;
+}
+
+#search-input:focus {
+  border-color: var(--accent-color);
+}
+
+/* Main Layout */
+.main-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.viewer-section {
+  background: var(--panel-bg);
+  padding: 12px;
+  border-bottom: 2px solid #181818;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.panel-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #a0a0a0;
+}
+
+.sub-badge {
+  color: var(--accent-color);
+  font-size: 12px;
+}
+
+/* Crafting Grid & Output Slot */
+.crafting-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.crafting-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  grid-template-rows: repeat(3, 44px);
+  gap: 4px;
+  background: #252627;
+  padding: 6px;
+  border-radius: 4px;
+  border: 2px solid #181818;
+}
+
+.crafting-arrow {
+  font-size: 24px;
+  color: #8b8b8b;
+}
+
+/* Slot Styling */
+.slot {
+  width: 44px;
+  height: 44px;
+  background: var(--slot-bg);
+  border-top: 2px solid var(--slot-border-dark);
+  border-left: 2px solid var(--slot-border-dark);
+  border-right: 2px solid var(--slot-border-light);
+  border-bottom: 2px solid var(--slot-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.result-slot {
+  width: 52px;
+  height: 52px;
+}
+
+.slot img {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.result-slot img {
+  width: 38px;
+  height: 38px;
+}
+
+.count-badge {
+  position: absolute;
+  bottom: 1px;
+  right: 2px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* Recipe Pagination Controls */
+.recipe-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.page-btn {
+  background: #4a4b4d;
+  color: #fff;
+  border: 1px solid #181818;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+
+/* Catalog Grid */
+.catalog-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.item-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 6px;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
